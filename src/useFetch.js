@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react";
+import axios from "axios";
 
 const useFetch = (url) => {
   const [data, setData] = useState(null);
@@ -6,33 +7,29 @@ const useFetch = (url) => {
   const [error, setError] = useState(null);
 
   useEffect(() => {
-    const abortCont = new AbortController();
+    const cancelToken = axios.CancelToken.source();
 
-    setTimeout(() => {
-      fetch(url, { signal: abortCont.signal })
-        .then((res) => {
-          if (!res.ok) {
-            throw Error("Could not fetch the data for that resource");
-          }
-          return res.json();
-        })
-        .then((data) => {
-          setData(data);
-          setIsPending(false);
-          setError(null);
-        })
-        .catch((err) => {
-          if (err.name === 'AbortError') {
-            console.log('fetch aborted');
-          } else {
-            setIsPending(false);
-            setError(err.message);
-          }
+    setTimeout(async () => {
+      try {
+        const response = await axios.get(url, {
+          cancelToken: cancelToken.token,
         });
+        setData(response.data);
+        setIsPending(false);
+        setError(null);
+      } catch (e) {
+        if (axios.isCancel(e)) {
+          console.log("Fetch aborted");
+        } else {
+          setIsPending(false);
+          setError("Could not fetch the data for that resource");
+        }
+      }
 
-      return () => abortCont.abort();
-    }, 1000)
-
+      return () => {
+        cancelToken.cancel();
+      };
+    }, 1000);
   }, [url]);
 
   return { data, isPending, error };
