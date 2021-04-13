@@ -1,7 +1,8 @@
 import { useParams } from "react-router";
-import useFetch from "./useFetch";
+import useFetch from "./hooks/useFetch";
 import { useHistory } from "react-router-dom";
 import axios from "axios";
+import {Link} from 'react-router-dom';
 
 const BlogDetails = () => {
   const { id } = useParams();
@@ -20,10 +21,6 @@ const BlogDetails = () => {
     }
   };
 
-  const handleEditClick = () => {
-    console.log("Edit Form");
-  }
-
   return (
     <div className="blog-details">
       {isPending && <div>Loading...</div>}
@@ -32,8 +29,12 @@ const BlogDetails = () => {
         <article>
           <div className="detail-header">
             <h2>{blog.title}</h2>
-            <button onClick={handleEditClick} style={{marginLeft: "auto"}} className="editBtn">Edit</button>
-            <button onClick={handleDeleteClick} style={{marginLeft: "15px"}} className="deleteBtn">Delete</button>
+            <Link 
+            to={`/form/${blog.id}/edit`} 
+            className="editBtn">
+              Edit
+              </Link>
+            <button onClick={handleDeleteClick} className="deleteBtn">Delete</button>
           </div>
           <p>Written by {blog.author}</p>
           <div>{blog.body}</div>

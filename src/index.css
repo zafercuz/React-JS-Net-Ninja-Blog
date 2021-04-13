@@ -68,11 +68,21 @@
   border-radius: 8px;
   cursor: pointer;
 }
+.blog-details a {
+  color: #fff;
+  border: 0;
+  padding: 8px;
+  border-radius: 8px;
+  cursor: pointer;
+  text-decoration: none;
+}
 .blog-details .deleteBtn {
   background: #f1356d;
+  margin-left: 15px;
 }
 .blog-details .editBtn {
   background: #2d9917;
+  margin-left: auto;
 }
 .blog-details .detail-header {
   display: flex;
