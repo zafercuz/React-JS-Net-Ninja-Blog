@@ -7,6 +7,8 @@ const useFetch = (url) => {
   const [error, setError] = useState(null);
 
   useEffect(() => {
+    // If the URL passed is "cancel" then that would mean to
+    // not do the fetching function
     if (url !== "cancel") {
       const cancelToken = axios.CancelToken.source();
 

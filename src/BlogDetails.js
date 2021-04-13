@@ -3,6 +3,7 @@ import useFetch from "./hooks/useFetch";
 import { useHistory } from "react-router-dom";
 import axios from "axios";
 import {Link} from 'react-router-dom';
+import Swal from 'sweetalert2';
 
 const BlogDetails = () => {
   const { id } = useParams();
@@ -13,8 +14,24 @@ const BlogDetails = () => {
 
   const handleDeleteClick = async () => {
     try {
-      await axios.delete("http://localhost:8000/blogs/" + blog.id);
-      history.push("/");
+      Swal.fire({
+        title: 'Are you sure?',
+        text: "You won't be able to revert this!",
+        icon: 'warning',
+        showCancelButton: true,
+        confirmButtonColor: '#3085d6',
+        cancelButtonColor: '#d33',
+        confirmButtonText: 'Yes, delete it!'
+      }).then(async (result) => {
+        if (result.isConfirmed) {
+          await axios.delete("http://localhost:8000/blogs/" + blog.id);
+          Swal.fire(
+            'Deleted!',
+            'Your file has been deleted.',
+            'success'
+          ).then(() => history.push("/"));
+        }
+      });
     } catch (e) {
       console.log(e);
       alert("An error occurred while deleting");

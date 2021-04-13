@@ -2,6 +2,7 @@ import { useState, useEffect } from "react";
 import { useHistory, useParams } from "react-router-dom";
 import axios from "axios";
 import useFetch from "./hooks/useFetch";
+import Swal from 'sweetalert2';
 
 const CreateEdit = () => {
   const [title, setTitle] = useState("");
@@ -14,53 +15,27 @@ const CreateEdit = () => {
   const blogId = params.id;
 
   // For Edit Instance
-  const [isFetchPending, setIsFetchPending] = useState(true);
-  const [error, setError] = useState(null);
-  const { data: blog, error2, isPending2 } = useFetch(
+  const { data, error, isPending: isFetchPending } = useFetch(
     apiType === "edit" ? "http://localhost:8000/blogs/" + blogId : "cancel"
   );
-  
+
   useEffect(() => {
+    // Set initial form values to blank incase the URL is for Creation
     setTitle("");
     setBody("");
-    setAuthor("");
+    setAuthor("mario"); // Defaulted to "mario" as its the default author
 
-    if (apiType === "edit") {
-      const cancelToken = axios.CancelToken.source();
-
-      setTimeout(async () => {
-        try {
-          const response = await axios.get(
-            "http://localhost:8000/blogs/" + blogId,
-            {
-              cancelToken: cancelToken.token,
-            }
-          );
-          // Update the values of the form
-          setTitle(response.data.title);
-          setBody(response.data.body);
-          setAuthor(response.data.author);
-
-          setIsFetchPending(false);
-          setError(null);
-        } catch (e) {
-          if (axios.isCancel(e)) {
-            console.log("Fetch aborted");
-          } else {
-            setIsFetchPending(false);
-            setError("Could not fetch the data for that resource");
-          }
-        }
-
-        return () => {
-          cancelToken.cancel();
-        };
-      }, 1000);
+    // If NOT null then, assign the values fetched from Server to the Forms
+    if (data !== null && apiType === "edit") {
+      setTitle(data.title);
+      setBody(data.body);
+      setAuthor(data.author);
     }
-  }, [params]);
+  }, [apiType, data]);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+
     const blog = { title, body, author };
 
     setIsPending(true);
@@ -71,11 +46,17 @@ const CreateEdit = () => {
           ...blog,
         });
       else
-        axios.put("http://localhost:8000/blogs/" + blogId, {
+        await axios.put("http://localhost:8000/blogs/" + blogId, {
           ...blog,
         });
-      setIsPending(false);
-      history.push("/");
+      Swal.fire(
+        apiType === "post" ? 'Created!' : "Edited!",
+        `Your file has been ${apiType === "post" ? "Created" : "Edited"}.`,
+        'success'
+      ).then(() => {
+        setIsPending(false);
+        history.push("/");
+      });
     } catch (e) {
       console.log(e);
       setIsPending(false);
