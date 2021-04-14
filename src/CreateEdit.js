@@ -1,14 +1,13 @@
 import { useState, useEffect } from "react";
 import { useHistory, useParams } from "react-router-dom";
-import axios from "axios";
 import useFetch from "./hooks/useFetch";
-import Swal from 'sweetalert2';
+import usePostPut from "./hooks/usePostPut";
 
 const CreateEdit = () => {
   const [title, setTitle] = useState("");
   const [body, setBody] = useState("");
   const [author, setAuthor] = useState("mario");
-  const [isPending, setIsPending] = useState(false);
+  // const [isPending, setIsPending] = useState(false);
   const history = useHistory();
   const params = useParams();
   const apiType = params.type;
@@ -17,6 +16,10 @@ const CreateEdit = () => {
   // For Edit Instance
   const { data, error, isPending: isFetchPending } = useFetch(
     apiType === "edit" ? "http://localhost:8000/blogs/" + blogId : "cancel"
+  );
+  const { isPending, handlePostUpdate } = usePostPut(
+    apiType === "edit" ? "http://localhost:8000/blogs/" + blogId
+      : "http://localhost:8000/blogs/"
   );
 
   useEffect(() => {
@@ -35,32 +38,9 @@ const CreateEdit = () => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-
     const blog = { title, body, author };
-
-    setIsPending(true);
-
-    try {
-      if (apiType === "post")
-        await axios.post("http://localhost:8000/blogs", {
-          ...blog,
-        });
-      else
-        await axios.put("http://localhost:8000/blogs/" + blogId, {
-          ...blog,
-        });
-      Swal.fire(
-        apiType === "post" ? 'Created!' : "Edited!",
-        `Your file has been ${apiType === "post" ? "Created" : "Edited"}.`,
-        'success'
-      ).then(() => {
-        setIsPending(false);
-        history.push("/");
-      });
-    } catch (e) {
-      console.log(e);
-      setIsPending(false);
-    }
+    const message = `Blog successfully ${apiType === "post" ? "Created!" : "Edited!"}`;
+    handlePostUpdate(apiType, blog, message, "/", history);
   };
 
   return (
